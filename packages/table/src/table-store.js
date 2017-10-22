@@ -1,6 +1,7 @@
 import Vue from 'vue';
 import debounce from 'throttle-debounce/debounce';
 import { orderBy, getColumnById, getRowIdentity } from './util';
+import {masterFilter} from './filter-methods';
 
 const sortData = (data, states) => {
   const sortingColumn = states.sortingColumn;
@@ -70,6 +71,7 @@ const TableStore = function(table, initialState = {}) {
     currentRow: null,
     hoverRow: null,
     filters: {},
+    filterTypes: {},
     expandRows: [],
     defaultExpandAll: false
   };
@@ -146,19 +148,20 @@ TableStore.prototype.mutations = {
   },
 
   filterChange(states, options) {
-    // TODO filter the value based on ()
-    // TODO not filter if filterable = 'custom'
-    let { column, values, silent } = options;
+    let { column, values, filterType, silent } = options;
     if (values && !Array.isArray(values)) {
       values = [values];
     }
 
     const prop = column.property;
     const filters = {};
+    const filterTypes = {};
 
     if (prop) {
       states.filters[column.id] = values;
+      states.filterTypes[column.id] = filterType;
       filters[column.columnKey || column.id] = values;
+      filterTypes[column.columnKey || column.id] = filterType;
     }
 
     let data = states._data;
@@ -167,10 +170,21 @@ TableStore.prototype.mutations = {
       const values = states.filters[columnId];
       if (!values || values.length === 0) return;
       const column = getColumnById(this.states, columnId);
-      if (column && column.filterMethod) {
-        data = data.filter((row) => {
-          return values.some(value => column.filterMethod.call(null, value, row));
-        });
+      if (column.filterable === 'custom') return;
+
+      const filterType = states.filterTypes[columnId];
+
+      if (filterType === 'tag') {
+        if (column && column.filterMethod) {
+          data = data.filter((row) => {
+            return values.some(value => column.filterMethod.call(null, value, row));
+          });
+        }
+      } else {
+        if (column) {
+          const filterMethod = column.filterMethod || masterFilter;
+          data = data.filter((row) => filterMethod.call(null, values, row, filterType, column));
+        }
       }
     });
 
@@ -178,7 +192,7 @@ TableStore.prototype.mutations = {
     states.data = sortData(data, states);
 
     if (!silent) {
-      this.table.$emit('filter-change', filters);
+      this.table.$emit('filter-change', filters, filterTypes);
     }
 
     Vue.nextTick(() => this.table.updateScrollY());

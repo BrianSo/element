@@ -147,12 +147,12 @@ export default {
     },
     /**
      * Filter Types
-     * Array of enum['in','match','==','>','<','>=','<=','range', 'all'] or String '*'
+     * Array of enum['tag','match','==','>','<','>=','<=','range'] or String '*'
      * if value = '*', the value will include all types except 'match'
      */
     filterTypes: {
       type: [String, Array],
-      default: ()=>['in'] // for backward compatibility
+      default: ()=>['tag'] // for backward compatibility
     },
     /**
      * Filter Data Type
@@ -259,7 +259,7 @@ export default {
       filterMethod: this.filterMethod,
       filters: this.filters,
       filterable: this.filterable || this.filters || this.filterMethod, // the or cases are for backward compatibility
-      filterTypes: this.filterTypes,
+      filterTypes: this.filterTypes === '*' ? ['==', '>', '<', '>=', '<=', 'range'] : this.filterTypes,
       filterDataType: this.filterDataType,
       filterMultiple: this.filterMultiple,
       filterOpened: false,
