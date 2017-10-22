@@ -168,12 +168,19 @@ TableStore.prototype.mutations = {
 
     Object.keys(states.filters).forEach((columnId) => {
       const values = states.filters[columnId];
-      if (!values || values.length === 0) return;
       const column = getColumnById(this.states, columnId);
       if (column.filterable === 'custom') return;
-
       const filterType = states.filterTypes[columnId];
+      if (!values || values.length === 0) {
+        if (column && column.renderFilter) {
+          if (column.filterMethod) {
+            data = data.filter((row) => column.filterMethod.call(null, values, row, filterType, column));
+          }
+        }
+        return;
+      }
 
+      console.log(column);
       if (filterType === 'tag') {
         if (column && column.filterMethod) {
           data = data.filter((row) => {

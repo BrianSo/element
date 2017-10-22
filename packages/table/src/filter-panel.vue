@@ -2,7 +2,6 @@
   <transition name="el-zoom-in-top">
     <div class="el-table-filter" v-show="showPopper">
       <template v-if="renderFunction">
-        Others
         <JustRender :render-function="renderFunction"></JustRender>
       </template>
       <template v-else>

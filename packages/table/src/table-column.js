@@ -145,6 +145,7 @@ export default {
       type: [String, Boolean], // enum['custom', true, false]
       default: false
     },
+    renderFilter: Function,
     /**
      * Filter Types
      * Array of enum['tag','match','==','>','<','>=','<=','range'] or String '*'
