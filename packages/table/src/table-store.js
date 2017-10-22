@@ -146,6 +146,8 @@ TableStore.prototype.mutations = {
   },
 
   filterChange(states, options) {
+    // TODO filter the value based on ()
+    // TODO not filter if filterable = 'custom'
     let { column, values, silent } = options;
     if (values && !Array.isArray(values)) {
       values = [values];

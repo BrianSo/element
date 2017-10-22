@@ -261,7 +261,11 @@ export default {
         }
         filterPanel.table = table;
         filterPanel.cell = cell;
+        filterPanel.filterSlot = column.filterSlot;
         filterPanel.column = column;
+        filterPanel.renderFunction = column.renderFilter;
+        filterPanel.filterTypes = column.filterTypes;
+        filterPanel.filterDataType = column.filterDataType;
         !this.$isServer && filterPanel.$mount(document.createElement('div'));
       }
 

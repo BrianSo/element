@@ -1,34 +1,48 @@
 <template>
   <transition name="el-zoom-in-top">
-    <div class="el-table-filter" v-if="multiple" v-show="showPopper">
-      <div class="el-table-filter__content">
-        <el-checkbox-group class="el-table-filter__checkbox-group" v-model="filteredValue">
-          <el-checkbox
-            v-for="filter in filters"
-            :key="filter.value"
-            :label="filter.value">{{ filter.text }}</el-checkbox>
-        </el-checkbox-group>
+    <template v-if="!renderFunction && column.filterTypes.length === 1 && column.filterTypes[0] === 'in'">
+      <div class="el-table-filter" v-if="multiple" v-show="showPopper">
+        <div class="el-table-filter__content">
+          <el-checkbox-group class="el-table-filter__checkbox-group" v-model="filteredValue">
+            <el-checkbox
+                    v-for="filter in filters"
+                    :key="filter.value"
+                    :label="filter.value">{{ filter.text }}</el-checkbox>
+          </el-checkbox-group>
+        </div>
+        <div class="el-table-filter__bottom">
+          <button @click="handleConfirm"
+                  :class="{ 'is-disabled': filteredValue.length === 0 }"
+                  :disabled="filteredValue.length === 0">{{ t('el.table.confirmFilter') }}</button>
+          <button @click="handleReset">{{ t('el.table.resetFilter') }}</button>
+        </div>
       </div>
-      <div class="el-table-filter__bottom">
-        <button @click="handleConfirm"
-          :class="{ 'is-disabled': filteredValue.length === 0 }"
-          :disabled="filteredValue.length === 0">{{ t('el.table.confirmFilter') }}</button>
-        <button @click="handleReset">{{ t('el.table.resetFilter') }}</button>
+      <div class="el-table-filter" v-else v-show="showPopper">
+        <ul class="el-table-filter__list">
+          <li class="el-table-filter__list-item"
+              :class="{ 'is-active': filterValue === undefined || filterValue === null }"
+              @click="handleSelect(null)">{{ t('el.table.clearFilter') }}</li>
+          <li class="el-table-filter__list-item"
+              v-for="filter in filters"
+              :label="filter.value"
+              :key="filter.value"
+              :class="{ 'is-active': isActive(filter) }"
+              @click="handleSelect(filter.value)" >{{ filter.text }}</li>
+        </ul>
       </div>
-    </div>
-    <div class="el-table-filter" v-else v-show="showPopper">
-      <ul class="el-table-filter__list">
-        <li class="el-table-filter__list-item"
-            :class="{ 'is-active': filterValue === undefined || filterValue === null }"
-            @click="handleSelect(null)">{{ t('el.table.clearFilter') }}</li>
-        <li class="el-table-filter__list-item"
-            v-for="filter in filters"
-            :label="filter.value"
-            :key="filter.value"
-            :class="{ 'is-active': isActive(filter) }"
-            @click="handleSelect(filter.value)" >{{ filter.text }}</li>
-      </ul>
-    </div>
+    </template>
+    <template v-else>
+      <div class="el-table-filter" v-show="showPopper">
+        Others
+        <JustRender v-if="renderFunction" :render-function="renderFunction"></JustRender>
+        <div class="el-table-filter__bottom">
+          <button @click="handleConfirm"
+                  :class="{ 'is-disabled': filteredValue.length === 0 }"
+                  :disabled="filteredValue.length === 0">{{ t('el.table.confirmFilter') }}</button>
+          <button @click="handleReset">{{ t('el.table.resetFilter') }}</button>
+        </div>
+      </div>
+    </template>
   </transition>
 </template>
 
@@ -40,6 +54,7 @@
   import Dropdown from './dropdown';
   import ElCheckbox from 'element-ui/packages/checkbox';
   import ElCheckboxGroup from 'element-ui/packages/checkbox-group';
+  import JustRender from './just-render';
 
   export default {
     name: 'ElTableFilterPanel',
@@ -52,7 +67,8 @@
 
     components: {
       ElCheckbox,
-      ElCheckboxGroup
+      ElCheckboxGroup,
+      JustRender
     },
 
     props: {
@@ -109,12 +125,16 @@
         this.table.store.commit('filterChange', {
           column: this.column,
           values: filteredValue
+//          filterType: this.column.filterType
         });
       }
     },
 
     data() {
       return {
+        renderFunction: null,
+        filterTypes: null,
+        filterDataType: null,
         table: null,
         cell: null,
         column: null

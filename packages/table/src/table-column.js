@@ -141,6 +141,29 @@ export default {
     formatter: Function,
     selectable: Function,
     reserveSelection: Boolean,
+    filterable: {
+      type: [String, Boolean], // enum['custom', true, false]
+      default: false
+    },
+    /**
+     * Filter Types
+     * Array of enum['in','match','==','>','<','>=','<=','range', 'all'] or String '*'
+     * if value = '*', the value will include all types except 'match'
+     */
+    filterTypes: {
+      type: [String, Array],
+      default: ()=>['in'] // for backward compatibility
+    },
+    /**
+     * Filter Data Type
+     * enum['string','date','time','datetime','number']
+     * for date, time, datetime: the given value must be a Date object, otherwise a filterMethod is required
+     * when filterType === 'match', only string is supported
+     */
+    filterDataType: {
+      type: String,
+      default: 'string' // for backward compatibility
+    },
     filterMethod: Function,
     filteredValue: Array,
     filters: Array,
@@ -232,9 +255,12 @@ export default {
       selectable: this.selectable,
       reserveSelection: this.reserveSelection,
       fixed: this.fixed === '' ? true : this.fixed,
+      renderFilter: this.renderFilter || (this.$slots.filter ? ((h) => h('div', this.$slots.filter)) : null),
       filterMethod: this.filterMethod,
       filters: this.filters,
-      filterable: this.filters || this.filterMethod,
+      filterable: this.filterable || this.filters || this.filterMethod, // the or cases are for backward compatibility
+      filterTypes: this.filterTypes,
+      filterDataType: this.filterDataType,
       filterMultiple: this.filterMultiple,
       filterOpened: false,
       filteredValue: this.filteredValue || [],

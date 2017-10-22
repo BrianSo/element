@@ -1339,7 +1339,7 @@
 ```
 :::
 
-### 筛选
+### 筛选 (旧)
 
 对表格进行筛选，可快速查找到自己想看的数据。
 
@@ -1415,6 +1415,116 @@
       },
       filterTag(value, row) {
         return row.tag === value;
+      }
+    }
+  }
+</script>
+```
+:::
+
+### 筛选(新)
+
+对表格进行筛选，可快速查找到自己想看的数据。
+
+:::demo 在列中设置`filterable`属性即可开启该列的筛选，filters 是一个数组，`filter-method`是一个方法，它用于决定某些数据是否显示，会传入两个参数：`value`和`row`。如果需要后端筛选，需将`filterable`设置为`custom`，同时在 Table 上监听`filter-change`事件，在事件回调中可以获取当前的筛选字段名、类别及条件，从而向接口请求筛选后的表格数据。
+```html
+<template>
+  <el-table
+    :data="tableData"
+    border
+    style="width: 100%">
+    <el-table-column
+      prop="date"
+      label="日期"
+      sortable
+      :filterable="true"
+      :filter-types="'*'"
+      filter-data-type="date"
+      width="180">
+    </el-table-column>
+    <el-table-column
+      prop="name"
+      label="姓名"
+      :filterable="true"
+      :filter-types="['match']"
+      filter-data-type="string"
+      width="180">
+    </el-table-column>
+    <el-table-column
+      prop="address"
+      label="地址"
+      :filterable="true"
+      :formatter="formatter">
+      <template slot="filter">
+        <div>
+          <span>目前位置:</span>
+          <el-input></el-input>
+          <span>距离(米):</span>
+          <el-input></el-input>
+        </div>
+      </template>
+    </el-table-column>
+    <el-table-column
+      prop="tag"
+      label="标签"
+      width="100"
+      :filterable="true"
+      :filter-types="['in']"
+      filter-data-type="string"
+      :filters="[{ text: '家', value: '家' }, { text: '公司', value: '公司' }]"
+      :filter-method="filterTag"
+      filter-placement="bottom-end">
+      <template scope="scope">
+        <el-tag
+          :type="scope.row.tag === '家' ? 'primary' : 'success'"
+          close-transition>{{scope.row.tag}}</el-tag>
+      </template>
+    </el-table-column>
+  </el-table>
+</template>
+
+<script>
+  export default {
+    data() {
+      return {
+        tableData: [{
+          date: '2016-05-02',
+          name: '王小虎',
+          address: '上海市普陀区金沙江路 1518 弄',
+          tag: '家'
+        }, {
+          date: '2016-05-04',
+          name: '王小虎',
+          address: '上海市普陀区金沙江路 1517 弄',
+          tag: '公司'
+        }, {
+          date: '2016-05-01',
+          name: '王小虎',
+          address: '上海市普陀区金沙江路 1519 弄',
+          tag: '家'
+        }, {
+          date: '2016-05-03',
+          name: '王小虎',
+          address: '上海市普陀区金沙江路 1516 弄',
+          tag: '公司'
+        }],
+        filterPlaceValue: '',
+        filterDistanceValue: '',
+      }
+    },
+    methods: {
+      formatter(row, column) {
+        return row.address;
+      },
+      filterTag(value, row) {
+        return row.tag === value;
+      },
+      filterNearestPlaces(value, row) {
+        const distance = (a,b) => {
+          console.log('not implemented');
+          return 2;
+        }
+        return distance(row.address, this.filterPlaceValue) < Number(this.filterDistanceValue);
       }
     }
   }
