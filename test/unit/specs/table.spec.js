@@ -228,11 +228,12 @@ describe('Table', () => {
   });
 
   describe('filter', () => {
-    let vm;
+    describe('tag', () => {
+      let vm;
 
-    beforeEach(done => {
-      vm = createVue({
-        template: `
+      beforeEach(done => {
+        vm = createVue({
+          template: `
           <el-table ref="table" :data="testData" @filter-change="handleFilterChange">
             <el-table-column prop="name" label="片名" />
             <el-table-column prop="release" label="发行日期" />
@@ -250,83 +251,131 @@ describe('Table', () => {
           </el-table>
         `,
 
-        created() {
-          this.testData = getTestData();
-        },
-
-        methods: {
-          filterMethod(value, row) {
-            return value === row.director;
+          created() {
+            this.testData = getTestData();
           },
-          handleFilterChange(filters) {
-            this.filters = filters;
+
+          methods: {
+            filterMethod(value, row) {
+              return value === row.director;
+            },
+            handleFilterChange(filters) {
+              this.filters = filters;
+            }
           }
-        }
-      }, true);
+        }, true);
 
-      setTimeout(done, DELAY);
-    });
+        setTimeout(done, DELAY);
+      });
 
-    afterEach(() => destroyVM(vm));
+      afterEach(() => destroyVM(vm));
 
-    it('render', () => {
-      expect(vm.$el.querySelector('.el-table__column-filter-trigger')).to.exist;
-    });
+      it('render', () => {
+        expect(vm.$el.querySelector('.el-table__column-filter-trigger')).to.exist;
+      });
 
-    it('click dropdown', done => {
-      const btn = vm.$el.querySelector('.el-table__column-filter-trigger');
-      triggerEvent(btn, 'click', true, false);
-      setTimeout(_ => {
-        const filter = document.body.querySelector('.el-table-filter');
-        expect(filter).to.exist;
-        document.body.removeChild(filter);
-        done();
-      }, 100);
-    });
-
-    it('click filter', done => {
-      const btn = vm.$el.querySelector('.el-table__column-filter-trigger');
-
-      triggerEvent(btn, 'click', true, false);
-      setTimeout(_ => {
-        const filter = document.body.querySelector('.el-table-filter');
-
-        // John Lasseter
-        triggerEvent(filter.querySelector('.el-checkbox'), 'click', true, false);
-        // confrim button
+      it('click dropdown', done => {
+        const btn = vm.$el.querySelector('.el-table__column-filter-trigger');
+        triggerEvent(btn, 'click', true, false);
         setTimeout(_ => {
-          triggerEvent(filter.querySelector('.el-table-filter__bottom button'), 'click', true, false);
-          setTimeout(_ => {
-            expect(vm.filters['director']).to.be.eql(['John Lasseter']);
-            expect(vm.$el.querySelectorAll('.el-table__body-wrapper tbody tr')).to.length(3);
-            document.body.removeChild(filter);
-            done();
-          }, DELAY);
+          const filter = document.body.querySelector('.el-table-filter');
+          expect(filter).to.exist;
+          document.body.removeChild(filter);
+          done();
         }, 100);
-      }, 100);
+      });
+
+      it('click filter', done => {
+        const btn = vm.$el.querySelector('.el-table__column-filter-trigger');
+
+        triggerEvent(btn, 'click', true, false);
+        setTimeout(_ => {
+          const filter = document.body.querySelector('.el-table-filter');
+
+          // John Lasseter
+          triggerEvent(filter.querySelector('.el-checkbox'), 'click', true, false);
+          // confrim button
+          setTimeout(_ => {
+            triggerEvent(filter.querySelector('.el-table-filter__bottom button'), 'click', true, false);
+            setTimeout(_ => {
+              expect(vm.filters['director']).to.be.eql(['John Lasseter']);
+              expect(vm.$el.querySelectorAll('.el-table__body-wrapper tbody tr')).to.length(3);
+              document.body.removeChild(filter);
+              done();
+            }, DELAY);
+          }, 100);
+        }, 100);
+      });
+
+      it('click reset', done => {
+        const btn = vm.$el.querySelector('.el-table__column-filter-trigger');
+
+        triggerEvent(btn, 'click', true, false);
+        setTimeout(_ => {
+          const filter = document.body.querySelector('.el-table-filter');
+
+          // John Lasseter
+          triggerEvent(filter.querySelector('.el-checkbox'), 'click', true, false);
+          setTimeout(_ => {
+            // reset button
+            triggerEvent(filter.querySelectorAll('.el-table-filter__bottom button')[1], 'click', true, false);
+            setTimeout(_ => {
+              expect(vm.filters['director']).to.be.eql([]);
+              expect(filter.querySelector('.el-table-filter__bottom button').classList.contains('is-disabled')).to.true;
+              document.body.removeChild(filter);
+              destroyVM(vm);
+              done();
+            }, DELAY);
+          }, 100);
+        }, 100);
+      });
     });
 
-    it('click reset', done => {
-      const btn = vm.$el.querySelector('.el-table__column-filter-trigger');
+    describe('user selected filter type', () => {
+      it('render a selection tag for filter type selection', ()=>{});
+      it('switch and apply the filter type', ()=>{});
+      it('click filter', ()=>{});
+      it('click reset', ()=>{});
+    });
 
-      triggerEvent(btn, 'click', true, false);
-      setTimeout(_ => {
-        const filter = document.body.querySelector('.el-table-filter');
+    describe('custom filter', () => {
+      it('render', ()=>{});
+      it('call custom filter-method', ()=>{});
+      it('trigger proper filter-change event', ()=>{});
+      it('does not filter data in frontend when filterable === \'custom\'', ()=>{});
+    });
 
-        // John Lasseter
-        triggerEvent(filter.querySelector('.el-checkbox'), 'click', true, false);
-        setTimeout(_ => {
-          // reset button
-          triggerEvent(filter.querySelectorAll('.el-table-filter__bottom button')[1], 'click', true, false);
-          setTimeout(_ => {
-            expect(vm.filters['director']).to.be.eql([]);
-            expect(filter.querySelector('.el-table-filter__bottom button').classList.contains('is-disabled')).to.true;
-            document.body.removeChild(filter);
-            destroyVM(vm);
-            done();
-          }, DELAY);
-        }, 100);
-      }, 100);
+    describe('filter data types', () => {
+      describe('for string', ()=>{
+        it('render', ()=>{});
+        it('test match', ()=>{});
+        it('test ==', ()=>{});
+        it('test comparisons (>, <, >=, <=)', ()=>{});
+      });
+      describe('for date', ()=>{
+        it('render', ()=>{});
+        it('test match', ()=>{});
+        it('test ==', ()=>{});
+        it('test comparisons (>, <, >=, <=)', ()=>{});
+      });
+      describe('for time', ()=>{
+        it('render', ()=>{});
+        it('test match', ()=>{});
+        it('test ==', ()=>{});
+        it('test comparisons (>, <, >=, <=)', ()=>{});
+      });
+      describe('for datetime', ()=>{
+        it('render', ()=>{});
+        it('test match', ()=>{});
+        it('test ==', ()=>{});
+        it('test comparisons (>, <, >=, <=)', ()=>{});
+      });
+      describe('for number', ()=>{
+        it('render', ()=>{});
+        it('test match', ()=>{});
+        it('test ==', ()=>{});
+        it('test comparisons (>, <, >=, <=)', ()=>{});
+      });
     });
   });
 
